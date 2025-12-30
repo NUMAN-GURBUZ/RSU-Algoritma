@@ -5,7 +5,8 @@ BLOK_BOYUTU = 16  # 128 bit = 16 byte
 TUR_SAYISI = 3    # Algoritma 3 tur dönecek (basitleştirildi)
 
 # === 1. ANAHTAR ÜRETME (Gereksinim 2.1.1) ===
-def anahtar_uret(parola):
+# === 1. ANAHTAR ÜRETME (Gereksinim 2.1.1) ===
+def Anahtar_Uret(parola):
     """
     Kullanıcı parolasından SHA-256 kullanarak 128 bitlik (16 byte) anahtar üretir.
     """
@@ -54,7 +55,7 @@ def xor_bytes(b1, b2):
     return bytearray([x ^ y for x, y in zip(b1, b2)])
 
 # === 2. ŞİFRELEME FONKSİYONU (Gereksinim 2.1.2) ===
-def sifrele(duz_metin, anahtar):
+def Sifrele(duz_metin, anahtar):
     if len(duz_metin) != 16:
         raise ValueError("HATA: Metin tam olarak 16 byte (128 bit) olmalıdır.")
     
@@ -72,7 +73,7 @@ def sifrele(duz_metin, anahtar):
     return blok
 
 # === 3. DEŞİFRELEME FONKSİYONU (Gereksinim 2.1.3) ===
-def desifrele(sifreli_metin, anahtar):
+def Desifrele(sifreli_metin, anahtar):
     blok = bytearray(sifreli_metin)
     tur_anahtarlari = tur_anahtarlarini_uret(anahtar)
     
@@ -102,15 +103,15 @@ if __name__ == "__main__":
     print(f"2. Orjinal Metin: {orjinal_metin_str}")
 
     # Anahtar Üret
-    ana_anahtar = anahtar_uret(parola)
+    ana_anahtar = Anahtar_Uret(parola)
     print(f"3. Üretilen Anahtar (Hex): {ana_anahtar.hex().upper()}")
 
     # Şifrele
-    sifreli = sifrele(orjinal_metin_bytes, ana_anahtar)
+    sifreli = Sifrele(orjinal_metin_bytes, ana_anahtar)
     print(f"4. Şifreli Metin (Hex):  {sifreli.hex().upper()}")
 
     # Deşifrele
-    cozulen_bytes = desifrele(sifreli, ana_anahtar)
+    cozulen_bytes = Desifrele(sifreli, ana_anahtar)
     cozulen_metin = cozulen_bytes.decode('utf-8', errors='ignore')
     print(f"5. Deşifre Edilen Metin: {cozulen_metin}")
 
@@ -130,7 +131,7 @@ if __name__ == "__main__":
     print(f"Orijinal Anahtar: {ana_anahtar.hex().upper()}")
     print(f"Bozuk Anahtar   : {bozuk_anahtar.hex().upper()}")
 
-    hatali_cozum_bytes = desifrele(sifreli, bozuk_anahtar)
+    hatali_cozum_bytes = Desifrele(sifreli, bozuk_anahtar)
     # Çıktı anlamsız byte'lar olacağı için hex olarak gösteriyoruz
     print(f"Hatalı Çözüm (Hex): {hatali_cozum_bytes.hex().upper()}")
     
