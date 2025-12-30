@@ -1,3 +1,82 @@
+# BSG Proje Raporu — Aşama 1: Algoritma Tasarımı
+
+## 1. Algoritmanın adı
+
+GÖLGE‑128 (Shadow‑128)
+
+Kısa açıklama: İsimlendirme, şifreli metnin açık metnin "gölgesi" gibi davranması metaforundan gelmektedir. Bu çalışma eğitim amaçlı bir tasarım örneğidir.
+
+## 2. Amaç ve tasarım yaklaşımı
+
+Bu proje, blok‑şifreleme tasarım ilkelerini göstermek amacıyla basitleştirilmiş bir Substitution–Permutation Network (SPN) örneği sunar. Amaç; ikame (substitution), permütasyon (permutation) ve anahtar karıştırma adımlarının nasıl çalıştığını ve hangi zayıflıklara yol açabileceğini açıklamaktır.
+
+Tasarım kararları:
+
+- Blok boyutu: 128 bit (16 byte)
+- Anahtar boyutu: 128 bit (örnek)
+- Tur sayısı: Eğitim amaçlı örnekte düşük (örnek: 3 tur); gerçekçi güvenlik için artırılması gerekir
+
+## 3. Semboller ve tanımlar
+
+- P: Açık metin
+- C: Şifreli metin
+- K: Ana anahtar (master key)
+- K_i: i‑inci tur anahtarı
+- ⊕: XOR işlemi
+
+## 4. Anahtar genişletme (örnek)
+
+Örnek bir anahtar genişletme yaklaşımı (eğitim amaçlı):
+
+K_i = ROL_3(K_{i-1}) ⊕ RC_i
+
+Burada ROL_3, 3 bit sola döndürmeyi; RC_i ise tur sabitini ifade eder.
+
+## 5. Şifreleme adımları (her tur)
+
+Örnek tur yapısı:
+
+1. AddRoundKey: state = state ⊕ K_i
+2. SubBytes: Her byte için S(b) = (5·b + 13) mod 256 (örnek affine dönüşüm)
+3. ShiftRows: 16 byte'lık blok 4×4 matris olarak ele alınır; satırlar sırasıyla 0, 1, 2 ve 3 byte sola kaydırılır
+
+Tur denklemi (özet):
+
+M_{i+1} = P( S( M_i ⊕ K_i ) )
+
+Deşifreleme, bu işlemlerin tersinin ters sırada uygulanmasıyla gerçekleştirilir:
+
+M_i = S^{-1}( P^{-1}( M_{i+1} ) ) ⊕ K_i
+
+## 6. Kriptanaliz — Zayıflıklar ve öneriler
+
+Bu tasarım eğitim amaçlı olduğundan bazı zayıflıklar bilinçli olarak korunmuştur. Öne çıkan noktalar:
+
+- Yetersiz tur sayısı: Çok az tur, diferansiyel ve doğrusal kriptanalize karşı zayıf bırakır.
+- Basit anahtar türetme: Doğrusal veya tekrarlı anahtar genişletme zafiyet yaratır.
+- SubBytes'in affine/doğrusal seçimi: Non‑lineer, iyi tasarlanmış S‑Box'lar gerekir.
+- Basit permütasyon: Yalnızca rotasyon yerine karmaşık permütasyonlar önerilir.
+
+Öneriler: Tur sayısını artırmak, güçlü S‑Box'lar kullanmak ve karmaşık bir key‑schedule uygulamak güvenliği önemli ölçüde artırır.
+
+## 7. Uygulamalı örnek: Brute‑force senaryosu (örnek)
+
+Senaryo: Hedef anahtar 4 haneli bir parola ile kısıtlanmış olsun (örnek: "2024"). Bu durumda anahtar uzayı 10.000 olasılıktır; modern donanımda tarama kısa sürede tamamlanabilir. İşlem adımları:
+
+1. HEX formatındaki şifreli metin byte dizisine dönüştürülür.
+2. 0000–9999 aralığındaki tüm parolalar denenir.
+3. Her denemede `anahtar_uret(parola)` ile 16 byte anahtar elde edilip `desifrele(cipher_bytes, anahtar)` ile çözüm denenir.
+4. Elde edilen düz metin anlamlılık kriterleriyle (ör. belirli anahtar kelime veya karakter içerip içermediği) kontrol edilir.
+
+Kullanılan araç: Python 3.x (projedeki `anahtar_uret()` ve `desifrele()` fonksiyonları)
+
+## 8. Sonuç
+
+GÖLGE‑128, eğitim ve öğretim amaçlı tasarlanmış bir örnektir. Gerçek uygulamalarda güvenilirlik, analiz edilmiş ve standartlaşmış algoritmalar (ör. AES) tercih edilmelidir. Bu rapor tasarım kararlarını, potansiyel zayıflıkları ve basit saldırı senaryolarını açıklamaktadır.
+
+---
+
+**Not:** Bu belge eğitim amaçlıdır; üretim/uygulama güvenliği iddiası içermez.
 Proje Raporu: Aşama 1 - Algoritma Tasarımı
 1. Algoritmanın Adı
 İsim: GÖLGE-128 (Shadow-128) (İsimlendirme Mantığı: Şifreli metnin, açık metnin bir "gölgesi" gibi takip etmesi ancak asıl sureti gizlemesi metaforuna dayanır.)
