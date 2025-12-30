@@ -2,7 +2,7 @@ import hashlib
 
 # === SABİTLER ===
 BLOK_BOYUTU = 16  # 128 bit = 16 byte
-TUR_SAYISI = 10   # Algoritma 10 tur dönecek
+TUR_SAYISI = 3    # Algoritma 3 tur dönecek (basitleştirildi)
 
 # === 1. ANAHTAR ÜRETME (Gereksinim 2.1.1) ===
 def anahtar_uret(parola):
@@ -16,23 +16,14 @@ def anahtar_uret(parola):
 # === YARDIMCI MATEMATİKSEL FONKSİYONLAR ===
 def tur_anahtarlarini_uret(ana_anahtar):
     """
-    Ana anahtardan 10 adet tur anahtarı türetir.
-    Formül: K(i) = (K(i-1) << 3) XOR Tur_Sayisi
+    Ana anahtardan tur anahtarları türetir (basitleştirilmiş).
+    Her tur için ana anahtarı tur numarasıyla XOR yaparak basit bir türetme.
     """
     anahtarlar = []
-    mevcut = bytearray(ana_anahtar)
-    
     for i in range(TUR_SAYISI):
-        yeni_anahtar = bytearray(16)
-        for j in range(16):
-            # Her byte'ı 3 bit sola kaydır (dairesel) ve i ile XOR'la
-            val = mevcut[j]
-            # Python'da byte sınırlarını korumak için & 0xFF kullanıyoruz
-            rotate_val = ((val << 3) | (val >> 5)) & 0xFF
-            yeni_anahtar[j] = rotate_val ^ i
-        
-        anahtarlar.append(yeni_anahtar)
-        mevcut = yeni_anahtar # Bir sonraki tur için bunu kullan
+        # Basit türetme: Ana anahtarı tur numarasıyla XOR'la
+        tur_anahtari = bytearray([b ^ i for b in ana_anahtar])
+        anahtarlar.append(tur_anahtari)
     return anahtarlar
 
 def sub_bytes(durum):
@@ -44,42 +35,18 @@ def inv_sub_bytes(durum):
     # Not: 5'in mod 256'da tersi 205'tir.
     return bytearray([(205 * (b - 13)) % 256 for b in durum])
 
-def shift_rows(durum):
-    """Permütasyon: Satırları sola kaydır"""
+def shift_bytes(durum):
+    """Basit Permütasyon: Byte'ları 1 pozisyon sola kaydır (dairesel)"""
     yeni = bytearray(16)
-    d = durum # Yazım kolaylığı için
-    
-    # 1. Satır (0,4,8,12) -> Sabit
-    yeni[0], yeni[4], yeni[8], yeni[12] = d[0], d[4], d[8], d[12]
-    
-    # 2. Satır (1,5,9,13) -> 1 Sola Kaydır
-    yeni[1], yeni[5], yeni[9], yeni[13] = d[5], d[9], d[13], d[1]
-    
-    # 3. Satır (2,6,10,14) -> 2 Sola Kaydır
-    yeni[2], yeni[6], yeni[10], yeni[14] = d[10], d[14], d[2], d[6]
-    
-    # 4. Satır (3,7,11,15) -> 3 Sola Kaydır
-    yeni[3], yeni[7], yeni[11], yeni[15] = d[15], d[3], d[7], d[11]
-    
+    for i in range(16):
+        yeni[i] = durum[(i + 1) % 16]  # Dairesel kaydırma
     return yeni
 
-def inv_shift_rows(durum):
-    """Ters Permütasyon: Satırları sağa kaydır (Şifrelemenin tersi)"""
+def inv_shift_bytes(durum):
+    """Ters Permütasyon: Byte'ları 1 pozisyon sağa kaydır"""
     yeni = bytearray(16)
-    d = durum
-    
-    # 1. Satır -> Sabit
-    yeni[0], yeni[4], yeni[8], yeni[12] = d[0], d[4], d[8], d[12]
-    
-    # 2. Satır -> 1 Sağa Kaydır (Şifrelemedeki Solun Tersi)
-    yeni[5], yeni[9], yeni[13], yeni[1] = d[1], d[5], d[9], d[13]
-    
-    # 3. Satır -> 2 Sağa Kaydır
-    yeni[10], yeni[14], yeni[2], yeni[6] = d[2], d[6], d[10], d[14]
-    
-    # 4. Satır -> 3 Sağa Kaydır
-    yeni[15], yeni[3], yeni[7], yeni[11] = d[3], d[7], d[11], d[15]
-    
+    for i in range(16):
+        yeni[i] = durum[(i - 1) % 16]  # Ters dairesel kaydırma
     return yeni
 
 def xor_bytes(b1, b2):
@@ -99,8 +66,8 @@ def sifrele(duz_metin, anahtar):
         blok = xor_bytes(blok, tur_anahtarlari[i])
         # B. SubBytes (İkame)
         blok = sub_bytes(blok)
-        # C. ShiftRows (Permütasyon)
-        blok = shift_rows(blok)
+        # C. ShiftBytes (Basit Permütasyon)
+        blok = shift_bytes(blok)
         
     return blok
 
@@ -112,7 +79,7 @@ def desifrele(sifreli_metin, anahtar):
     # İşlemleri TERS Sırada ve TERS Fonksiyonlarla yapıyoruz
     for i in range(TUR_SAYISI - 1, -1, -1):
         # C. Ters Permütasyon
-        blok = inv_shift_rows(blok)
+        blok = inv_shift_bytes(blok)
         # B. Ters İkame
         blok = inv_sub_bytes(blok)
         # A. Anahtar Çıkarma (XOR'un tersi yine XOR'dur)

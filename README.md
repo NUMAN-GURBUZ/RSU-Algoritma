@@ -103,10 +103,3 @@ Hatalı Metin (Str):zilimMuh2025!
 3. **Saldırı**: Seçilen yöntemi uygulama, anahtar veya düz metin bulma
 4. **Doğrulama**: Bulunan sonuçları test etme
 
-## Güvenlik Uyarısı
-
-⚠️ **Bu algoritma sadece eğitim amaçlıdır** ve gerçek uygulamalarda kullanılmamalıdır. Güvenli şifreleme için AES gibi standart algoritmalar kullanılmalıdır.
-
----
-
-**Lisans**: Bu depo örnek/eğitim amaçlıdır.
