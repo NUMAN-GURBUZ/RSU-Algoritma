@@ -1,59 +1,13 @@
 # RSÜ (Rastgele Sayı Üreteci) Algoritması
 
-**Yazar:** Numan Gürbüz  
-**Tarih:** 2 Ocak 2026  
-**Ders:** Bilgi Sistemleri Güvenliği
 
----
-
-## 📋 İçindekiler
-
-- [Proje Hakkında](#-proje-hakkında)
-- [Algoritmaya Ön Değerler](#-algoritmaya-ön-değerler)
-- [Algoritmanın Tarifi (Sözel)](#-algoritmanın-tarifi-sözel)
-- [Sözde Kod](#-sözde-kod)
-- [Akış Şeması](#-akış-şeması)
-- [Programlama Dilinde Kodlanması](#-programlama-dilinde-kodlanması)
-- [Test Sonuçları](#-test-sonuçları)
-- [Kullanım](#-kullanım)
-
----
-
-## 🎯 Proje Hakkında
+##  Proje Hakkında
 
 Kriptografik anahtar üretimi için kullanılabilecek, basit matematiksel işlemlerle çalışan bir **Rastgele Sayı Üreteci (RSÜ)** algoritması.
 
-### Temel Özellikler
-- ✅ Tamamen rastgele çıktı üretimi
-- ✅ İstatistiksel kalite (0-1 dengesi)
-- ✅ Basit matematiksel işlemler (LCG + XOR)
-- ✅ Tüm istatistiksel testlerden geçer
 
----
 
-## 🔧 Algoritmaya Ön Değerler
-
-Algoritma başlatılırken aşağıdaki parametreler kullanılır:
-
-### LCG (Linear Congruential Generator) Parametreleri
-
-| Parametre | Değer | Açıklama |
-|-----------|-------|----------|
-| **a** (çarpan) | 1103515245 | LCG çarpan sabiti |
-| **c** (artış) | 12345 | LCG artış sabiti |
-| **m** (modül) | 2³² (4,294,967,296) | LCG modül değeri |
-| **seed** (tohum) | SHA-256(parola) | Kullanıcı parolasından türetilen başlangıç değeri |
-
-### XOR Karıştırma Sabitleri
-
-| Sabit | Değer | Kullanım |
-|-------|-------|----------|
-| **Maske 1** | 0x9D2C5680 | İlk XOR karıştırma maskesi |
-| **Maske 2** | 0xEFC60000 | İkinci XOR karıştırma maskesi |
-
----
-
-## 📖 Algoritmanın Tarifi (Sözel)
+##  Algoritmanın Tarifi 
 
 ### Genel Çalışma Prensibi
 
@@ -96,7 +50,7 @@ RSÜ algoritması, **Linear Congruential Generator (LCG)** ve **XOR Karıştırm
 
 ---
 
-## 💻 Sözde Kod
+##  Sözde Kod
 
 ```
 SINIF RSU:
@@ -153,31 +107,9 @@ SINIF RSU:
 
 ---
 
-## 📊 Akış Şeması
+##  Akış Şeması
 
-```mermaid
-flowchart TD
-    A[🚀 Başla] --> B[📝 Kullanıcıdan Parola Al]
-    B --> C[🔐 SHA-256 Hash Uygula]
-    C --> D[🌱 32-bit Seed Oluştur]
-    
-    D --> E[⚙️ LCG Adımı:<br/>seed = a×seed + c mod m]
-    E --> F[🔀 XOR Karıştırma Uygula]
-    
-    F --> G{🔄 Daha Fazla<br/>Sayı Gerekli?}
-    G -->|Evet| E
-    G -->|Hayır| H[✅ Bitir]
-    
-    F --> I[📐 0-1 Arası Normalize Et]
-    I --> J[📤 Rastgele Sayı Döndür]
-    
-    style A fill:#90EE90,stroke:#333,stroke-width:2px
-    style H fill:#FFB6C1,stroke:#333,stroke-width:2px
-    style E fill:#87CEEB,stroke:#333,stroke-width:2px
-    style F fill:#DDA0DD,stroke:#333,stroke-width:2px
-    style C fill:#FFD700,stroke:#333,stroke-width:2px
-    style J fill:#98FB98,stroke:#333,stroke-width:2px
-```
+![RSÜ Algoritması Akış Şeması](RSU_Akis_Semasi.png)
 
 ### Akış Şeması Açıklaması
 
@@ -189,87 +121,10 @@ flowchart TD
 6. **Normalize**: 0-1 arasına dönüştürme
 7. **Döngü**: İhtiyaç olduğu sürece devam eder
 
----
 
-## �️ Programlama Dilinde Kodlanması
 
-### Python Implementasyonu
 
-Algoritma **Python 3** dilinde kodlanmıştır. Tam kod için: [`RSU_Algoritma.py`](RSU_Algoritma.py)
-
-#### Ana Sınıf Yapısı
-
-```python
-import hashlib
-
-class RSU:
-    """Rastgele Sayı Üreteci - LCG + XOR Karıştırma"""
-    
-    def __init__(self, parola):
-        # LCG parametreleri
-        self.a = 1103515245
-        self.c = 12345
-        self.m = 2**32
-        
-        # Paroladan seed oluştur
-        self.seed = self._seed_olustur(parola)
-    
-    def _seed_olustur(self, parola):
-        """SHA-256 ile seed oluştur"""
-        hash_obj = hashlib.sha256(parola.encode('utf-8'))
-        hash_hex = hash_obj.hexdigest()
-        return int(hash_hex[:8], 16)
-    
-    def _lcg_adim(self):
-        """LCG formülü: seed = (a × seed + c) mod m"""
-        self.seed = (self.a * self.seed + self.c) % self.m
-        return self.seed
-    
-    def _karistir(self, sayi):
-        """XOR karıştırma ile kalite artırma"""
-        sayi ^= (sayi >> 11)
-        sayi ^= (sayi << 7) & 0x9D2C5680
-        sayi ^= (sayi << 15) & 0xEFC60000
-        sayi ^= (sayi >> 18)
-        return sayi
-    
-    def rastgele_sayi_uret(self):
-        """0-1 arası rastgele sayı üret"""
-        ham = self._lcg_adim()
-        karisik = self._karistir(ham)
-        return karisik / self.m
-    
-    def rastgele_bit_uret(self):
-        """Rastgele bit üret (0 veya 1)"""
-        return 1 if self.rastgele_sayi_uret() >= 0.5 else 0
-    
-    def rastgele_bit_dizisi_uret(self, n):
-        """n bitlik rastgele dizi üret"""
-        return [self.rastgele_bit_uret() for _ in range(n)]
-```
-
-### Kullanım Örneği
-
-```python
-# RSÜ oluştur
-rsu = RSU("gizli_parola_123")
-
-# Rastgele sayı üret (0.0 - 1.0)
-sayi = rsu.rastgele_sayi_uret()
-print(f"Rastgele sayı: {sayi}")
-
-# Rastgele bit üret (0 veya 1)
-bit = rsu.rastgele_bit_uret()
-print(f"Rastgele bit: {bit}")
-
-# 100 bitlik dizi üret
-bitler = rsu.rastgele_bit_dizisi_uret(100)
-print(f"Bit dizisi: {bitler}")
-```
-
----
-
-## ✅ Test Sonuçları
+##  Test Sonuçları
 
 ### Test Parametreleri
 
@@ -286,7 +141,7 @@ print(f"Bit dizisi: {bitler}")
 - 0 sayısı: ~50,000 (50.0%)
 - 1 sayısı: ~50,000 (50.0%)
 - Fark: < 2%
-- **Durum: ✅ BAŞARILI**
+- **Durum:  BAŞARILI**
 
 #### 2️⃣ Runs Testi
 **Amaç**: Ardışık bitlerin rastgeleliğini test eder (örn: 0000, 1111 gibi diziler).
@@ -295,7 +150,7 @@ print(f"Bit dizisi: {bitler}")
 - Gözlenen Runs: ~50,000
 - Beklenen Runs: ~50,000
 - p-değeri: > 0.05
-- **Durum: ✅ BAŞARILI**
+- **Durum:  BAŞARILI**
 
 #### 3️⃣ Ki-Kare Testi
 **Amaç**: Bit çiftlerinin (00, 01, 10, 11) düzgün dağılımını test eder.
@@ -303,42 +158,19 @@ print(f"Bit dizisi: {bitler}")
 **Sonuç**:
 - Her çift beklenen: ~25%
 - Ki-Kare değeri: < 7.815 (kritik değer)
-- **Durum: ✅ BAŞARILI**
+- **Durum:  BAŞARILI**
 
 ### Test Özeti
 
 | Test Adı | Sonuç | Açıklama |
 |----------|-------|----------|
-| **Frekans Testi** | ✅ BAŞARILI | 0-1 dengesi sağlanıyor |
-| **Runs Testi** | ✅ BAŞARILI | Ardışıklık rastgele |
-| **Ki-Kare Testi** | ✅ BAŞARILI | Bit çiftleri düzgün dağılmış |
+| **Frekans Testi** |  0-1 dengesi sağlanıyor |
+| **Runs Testi** |  Ardışıklık rastgele |
+| **Ki-Kare Testi** |  Bit çiftleri düzgün dağılmış |
 
 **🎉 TÜM TESTLER BAŞARILI!**
 
-Algoritma kriptografik anahtar üretimi için uygun istatistiksel kaliteye sahiptir.
 
----
-
-## � Kullanım
-
-### Gereksinimler
-
-- Python 3.7+
-- Standart kütüphaneler (hashlib, math)
-
-### Kurulum
-
-```bash
-# Repository'yi klonlayın
-git clone https://github.com/NUMAN-GURBUZ/Kriptografik-Algoritma-Rastgele-Say---retme.git
-cd Kriptografik-Algoritma-Rastgele-Say---retme
-```
-
-### Algoritma Testi
-
-```bash
-python RSU_Algoritma.py
-```
 
 **Örnek Çıktı**:
 ```
@@ -366,45 +198,3 @@ TESTLER TAMAMLANDI
 ============================================================
 ```
 
-### İstatistiksel Testler
-
-```bash
-python RSU_Testler.py
-```
-
----
-
-## 📁 Proje Dosyaları
-
-| Dosya | Açıklama |
-|-------|----------|
-| [`RSU_Algoritma.py`](RSU_Algoritma.py) | Ana algoritma implementasyonu |
-| [`RSU_Testler.py`](RSU_Testler.py) | İstatistiksel testler (Frekans, Runs, Ki-Kare) |
-| [`RSU_Rapor.md`](RSU_Rapor.md) | Detaylı teknik rapor |
-| [`README.md`](README.md) | Bu dosya |
-
----
-
-## 📚 Kaynaklar
-
-- Linear Congruential Generator (LCG)
-- Mersenne Twister XOR Karıştırma Teknikleri
-- NIST Statistical Test Suite
-
----
-
-## 👨‍💻 Yazar
-
-**Numan Gürbüz**  
-Bilgi Sistemleri Güvenliği Dersi  
-2 Ocak 2026
-
----
-
-## 📄 Lisans
-
-Bu proje eğitim amaçlıdır.
-
----
-
-**⚠️ Not**: Bu algoritma öğretim amaçlıdır. Gerçek kriptografik uygulamalar için `/dev/urandom` veya `secrets` modülü gibi işletim sistemi seviyesinde rastgele sayı üreteçleri kullanılmalıdır.
